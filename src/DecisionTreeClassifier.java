@@ -119,7 +119,7 @@ public class DecisionTreeClassifier
 			BufferedReader fileReader = null;
 			try
 			{
-				fileReader = new BufferedReader(new FileReader(new File(args[0])));
+				fileReader = new BufferedReader(new FileReader(new File(fn)));
 				String line = null;
 				while ((line = fileReader.readLine()) != null)
 				{

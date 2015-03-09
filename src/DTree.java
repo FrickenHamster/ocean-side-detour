@@ -16,6 +16,8 @@ public class DTree
 	private class DNode
 	{
 		public String splitAttr;
+		public double splitCutOff;
+		
 		public int type;
 		public DNode goodChild;
 		public DNode badChild;
@@ -89,6 +91,7 @@ public class DTree
 			}
 			else
 				node.type = 2;
+			return;
 		}
 		double highInfo = 0;
 		String highAttr = "";
@@ -102,7 +105,17 @@ public class DTree
 				highAttr = ss;
 			}
 		}
-		//System.out.println("Choose " + highAttr + " : " + highInfo);
+		if (highInfo < 0.02)
+		{
+			if (goodNum >= badNum)
+			{
+				node.type = 1;
+			}
+			else
+				node.type = 2;
+			return;
+		}
+		System.out.println("Choose " + highAttr + " : " + highInfo);
 		ArrayList<Document> goodDocs = new ArrayList<Document>(100);
 		ArrayList<Document> badDocs = new ArrayList<Document>(100);
 		node.splitAttr = highAttr;

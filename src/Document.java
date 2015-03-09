@@ -113,7 +113,7 @@ public class Document
 		if (rr.length() < 3)
 			return rr;
 
-		rr = rr.replaceAll("ing$|ed$", "");
+		rr = rr.replaceAll("ing$|ed$|s$|es$", "");
 		
 		return rr;
 	}
