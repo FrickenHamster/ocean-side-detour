@@ -34,6 +34,7 @@ public class Document
 	public Document(DecisionTreeClassifier main, String line)
 	{
 		this.main = main;
+		System.out.println(line);
 		String ll = line.substring(0, 1);
 		if (ll.equals("1 "))
 		{
@@ -93,6 +94,14 @@ public class Document
 		}
 	}
 	
+	public void setAttrs(HashMap<String, Boolean>map)
+	{
+		for (String kk:wordVector.keySet())
+		{
+			map.put(kk, true);
+		}
+	}
+	
 	public static String wordNormalizer(String word)
 	{
 		String rr = word.toLowerCase();
@@ -103,5 +112,15 @@ public class Document
 		rr = rr.replaceAll("ing$|ed$", "");
 		
 		return rr;
+	}
+	
+	public double getTermWeight(String term)
+	{
+		return wordVector.get(term).weight;
+	}
+
+	public boolean isLabel()
+	{
+		return label;
 	}
 }

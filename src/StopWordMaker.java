@@ -23,7 +23,9 @@ public class StopWordMaker
 			Scanner scanner = new Scanner(in);
 			while (scanner.hasNext())
 			{
-				System.out.println("STOP_WORDS.put(\"" + scanner.nextLine() + "\", true);");
+				String ss = scanner.nextLine();
+				ss = ss.replaceAll("[^a-zA-Z ]", "");
+				System.out.println("STOP_WORDS.put(\"" + ss + "\", true);");
 			}
 		} catch (FileNotFoundException e)
 		{
