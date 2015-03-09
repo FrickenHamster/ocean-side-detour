@@ -15,6 +15,8 @@ public class Document
 	private boolean label;
 	private String documentString;
 	
+	private boolean sortedLabel;
+	
 	private HashMap<String, Term> wordVector;
 	/*private HashMap<String, Double> wordTF;
 	private HashMap<String, Double> wordWeight;
@@ -31,16 +33,16 @@ public class Document
 		}
 	}
 	
-	public Document(DecisionTreeClassifier main, String line)
+	public Document(DecisionTreeClassifier main, String line, boolean train)
 	{
 		this.main = main;
-		System.out.println(line);
+		this.documentString = line;
 		String ll = line.substring(0, 1);
-		if (ll.equals("1 "))
+		if (ll.equals("1"))
 		{
 			label = true;
 		}
-		else
+		else if (ll.equals("0"))
 		{
 			label = false;
 		}
@@ -55,6 +57,8 @@ public class Document
 		for(String token:tokens)
 		{
 			String wordString = wordNormalizer(token);
+			if (wordString.equals(""))
+				continue;
 			Boolean bb = DecisionTreeClassifier.STOP_WORDS.get(wordString);
 			if (bb != null)
 				continue;
@@ -63,7 +67,8 @@ public class Document
 			{
 				Term nw = new Term();
 				wordVector.put(wordString, nw);
-				main.incIDFTerm(wordString);
+				if (train)
+					main.incIDFTerm(wordString);
 			}
 			else
 			{
@@ -90,7 +95,6 @@ public class Document
 		{
 			Term ww = wordVector.get(kk);
 			ww.weight = ww.tf * main.getIDF(kk);
-			System.out.println(kk + " w:" + ww.weight);
 		}
 	}
 	
@@ -116,11 +120,30 @@ public class Document
 	
 	public double getTermWeight(String term)
 	{
-		return wordVector.get(term).weight;
+		Term tt = wordVector.get(term);
+		if (tt == null)
+			return 0;
+		return tt.weight;
 	}
 
 	public boolean isLabel()
 	{
 		return label;
+	}
+
+	@Override
+	public String toString()
+	{
+		return documentString;
+	}
+
+	public boolean isSortedLabel()
+	{
+		return sortedLabel;
+	}
+
+	public void setSortedLabel(boolean sortedLabel)
+	{
+		this.sortedLabel = sortedLabel;
 	}
 }

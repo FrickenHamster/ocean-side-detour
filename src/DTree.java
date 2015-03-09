@@ -27,15 +27,15 @@ public class DTree
 	
 	public DTree()
 	{
-		System.out.println(calcI(9, 5));
-		System.out.println((double)5 / 14 * calcI(2, 3) + (double)4 / 14 * calcI(4, 0) + (double)5 / 14 * calcI(3, 2));
+		
 	}
 	
 	
 	public void makeTree(ArrayList<Document> docs)
 	{
 		
-		
+		root = new DNode();
+		mcfly(root, docs);
 		
 	}
 	
@@ -50,14 +50,29 @@ public class DTree
 			else
 				badNum++;
 		}
+		//System.out.println(goodNum + " : RATIO : " + badNum);
+		if (goodNum == 0 && badNum == 0)
+		{
+			System.out.println("wtf happened");
+		}
 		if (goodNum == 0)//case no docs
 		{
 			node.type = 2;
+			/*System.out.println("bad end");
+			for (Document doc:docs)
+			{
+				System.out.println(doc);
+			}*/
 			return;
 		}
 		if (badNum == 0)
 		{
 			node.type = 1;
+			/*System.out.println("good end");
+			for (Document doc:docs)
+			{
+				System.out.println(doc);
+			}*/
 			return;
 		}
 		HashMap<String, Boolean> attrs = new HashMap<String, Boolean>(300);
@@ -80,14 +95,17 @@ public class DTree
 		for (String ss:attrs.keySet())
 		{
 			double info = infoGain(ss, docs);
+			//System.out.println(ss + " : " + info);
 			if (info > highInfo)
 			{
 				highInfo = info;
 				highAttr = ss;
 			}
 		}
+		//System.out.println("Choose " + highAttr + " : " + highInfo);
 		ArrayList<Document> goodDocs = new ArrayList<Document>(100);
 		ArrayList<Document> badDocs = new ArrayList<Document>(100);
+		node.splitAttr = highAttr;
 		for (Document doc:docs)
 		{
 			if (doc.getTermWeight(highAttr) >= CUTOFF)
@@ -157,6 +175,41 @@ public class DTree
 		if (good == 0 || bad == 0)
 			return 0;
 		return -(good / total) * Math.log(good / total) / Math.log(2) - (bad / total) * (Math.log(bad / total) / Math.log(2));
+	}
+	
+	public void sortData(ArrayList<Document> docs)
+	{
+		int goodSort = 0;
+		for (Document doc:docs)
+		{
+			DNode curNode = root;
+			while(true)
+			{
+				if (curNode.type == 1)
+				{
+					doc.setSortedLabel(true);
+					break;
+				}
+				if (curNode.type == 2)
+				{
+					doc.setSortedLabel(false);
+					break;
+				}
+				double ww = doc.getTermWeight(curNode.splitAttr);
+				if (ww >= CUTOFF)
+				{
+					curNode = curNode.goodChild;
+				}
+				else
+				{
+					curNode = curNode.badChild;
+				}
+			}
+			if (doc.isLabel() == doc.isSortedLabel())
+				goodSort++;
+			//System.out.println("Sorted " + doc.isLabel() + " : " + doc.isSortedLabel());
+		}
+		System.out.println("Accuracy:" + (double)goodSort / (double)docs.size());
 	}
 	
 }

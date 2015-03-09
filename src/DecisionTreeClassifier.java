@@ -1,4 +1,5 @@
 import java.io.*;
+import java.lang.reflect.*;
 import java.util.*;
 
 /**
@@ -16,6 +17,8 @@ public class DecisionTreeClassifier
 	public HashMap<String, Double> termIDF;
 	
 	private ArrayList<Document> documents;
+	
+	private DTree tree;
 	
 	public DecisionTreeClassifier(String filename)
 	{
@@ -43,19 +46,15 @@ public class DecisionTreeClassifier
 		termFreq = new HashMap<String, Integer>(300);
 		termIDF = new HashMap<String, Double>(300);
 		documents = new ArrayList<Document>(100);
-
-		/*int t = 0;
+		tree = new DTree();
 		while (reader.hasNextLine())
 		{
-			*//*if (t > 10)
-				break;*//*
-			t++;
 			line = reader.nextLine();
 			if (line.equals(""))
 				continue;
 			// parse line to get label and data
 			//System.out.println(line);
-			Document doc = new Document(this, line);
+			Document doc = new Document(this, line, true);
 			documents.add(doc);
 		}
 		
@@ -65,8 +64,8 @@ public class DecisionTreeClassifier
 		{
 			dd.calcWeight();
 		}
-		*/
-		DTree tree = new DTree();
+		
+		tree.makeTree(documents);
 		
 		/*BufferedReader fileReader = null;
 		try
@@ -85,16 +84,60 @@ public class DecisionTreeClassifier
 		}*/
 	}
 	
+	public void sortData(ArrayList<String> docStrings)
+	{
+		ArrayList<Document> sortDocs = new ArrayList<Document>(100);
+		for (String ss:docStrings)
+		{
+			Document doc = new Document(this, ss, false);
+			sortDocs.add(doc);
+		}
+
+		for (Document dd:sortDocs)
+		{
+			dd.calcWeight();
+		}
+		
+		tree.sortData(sortDocs);
+		
+	}
 	
 
 	public static void main(String[] args)
 	{
 		String fn = "";
-		if (args.length == 1)
+		if (args.length >= 1)
 		{
 			fn = args[0];
 		}
 		DecisionTreeClassifier dt = new DecisionTreeClassifier(fn);
+		
+		if (args.length >= 2)
+		{
+			ArrayList<String> docStrings = new ArrayList<String>(100);
+			fn = args[1];
+			BufferedReader fileReader = null;
+			try
+			{
+				fileReader = new BufferedReader(new FileReader(new File(args[0])));
+				String line = null;
+				while ((line = fileReader.readLine()) != null)
+				{
+					docStrings.add(line);
+					// parse line to get label and data
+				}
+				dt.sortData(docStrings);
+			} catch (FileNotFoundException e)
+			{
+				e.printStackTrace();
+			} catch (IOException e)
+			{
+				e.printStackTrace();
+			}
+		}
+		
+		
+		
 	}
 	
 	public void incIDFTerm(String term)
@@ -115,7 +158,7 @@ public class DecisionTreeClassifier
 		for (String kk:termFreq.keySet())
 		{
 			termIDF.put(kk, 1 + Math.log(documents.size() / termFreq.get(kk)));
-			System.out.println(kk + ":" + termFreq.get(kk) + "," + termIDF.get(kk));
+			//System.out.println(kk + ":" + termFreq.get(kk) + "," + termIDF.get(kk));
 		}
 	}
 	
