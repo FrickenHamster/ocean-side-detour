@@ -82,6 +82,7 @@ public class Document
 		
 		for (String kk:wordVector.keySet())
 		{
+			
 			Term ww = wordVector.get(kk);
 			int wn = ww.num;
 			ww.tf = 0.5 + 0.5 * wn / maxFreq; 

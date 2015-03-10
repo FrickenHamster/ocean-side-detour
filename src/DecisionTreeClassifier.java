@@ -20,6 +20,9 @@ public class DecisionTreeClassifier
 	
 	private DTree tree;
 	
+	private int lowFreqCutOff;
+	private int highFreqCutOff;
+	
 	public DecisionTreeClassifier(String filename)
 	{
 		InputStream in = null;
@@ -57,7 +60,8 @@ public class DecisionTreeClassifier
 			Document doc = new Document(this, line, true);
 			documents.add(doc);
 		}
-		
+		lowFreqCutOff = (int)Math.round(documents.size() * 0.01);
+		highFreqCutOff = (int)Math.round(documents.size() * 0.3);
 		calcIDF();
 		
 		for (Document dd:documents)
@@ -157,9 +161,20 @@ public class DecisionTreeClassifier
 	{
 		for (String kk:termFreq.keySet())
 		{
-			termIDF.put(kk, 1 + Math.log(documents.size() / termFreq.get(kk)));
+			int dtf = termFreq.get(kk);
+			if (dtf >= highFreqCutOff)
+			{
+				System.out.println("too much " + kk + ":" + dtf);
+			}
+			if (dtf <= lowFreqCutOff)
+			{
+				System.out.println("too little " + kk + ":" + dtf);
+			}
+			if (dtf > 5 && dtf < 500)
+				termIDF.put(kk, 1 + Math.log(documents.size() / dtf));
 			//System.out.println(kk + ":" + termFreq.get(kk) + "," + termIDF.get(kk));
 		}
+		System.out.println("total terms" + termIDF.size());
 	}
 	
 	public double getIDF(String term)

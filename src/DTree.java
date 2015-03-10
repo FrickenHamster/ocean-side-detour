@@ -11,7 +11,7 @@ import java.util.*;
 public class DTree
 {
 	
-	private static double CUTOFF = 1;
+	private static double CUTOFF = .1;
 	
 	private class DNode
 	{
@@ -105,7 +105,7 @@ public class DTree
 				highAttr = ss;
 			}
 		}
-		if (highInfo < 0.018)
+		if (highInfo < 0.02)
 		{
 			if (goodNum >= badNum)
 			{
@@ -115,7 +115,16 @@ public class DTree
 				node.type = 2;
 			return;
 		}
-		System.out.println("Choose " + highAttr + " : " + highInfo);
+		if (highInfo > .8)
+		{
+			//System.out.println("Too Good" + highAttr + " : " + highInfo);
+			node.goodChild = new DNode();
+			node.badChild = new DNode();
+			node.goodChild.type = 1;
+			node.badChild.type = 2;
+			return;
+		}
+		//System.out.println("Choose " + highAttr + " : " + highInfo);
 		ArrayList<Document> goodDocs = new ArrayList<Document>(100);
 		ArrayList<Document> badDocs = new ArrayList<Document>(100);
 		node.splitAttr = highAttr;
