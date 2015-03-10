@@ -105,7 +105,7 @@ public class DTree
 				highAttr = ss;
 			}
 		}
-		if (highInfo < 0.02)
+		if (highInfo < 0.018)
 		{
 			if (goodNum >= badNum)
 			{
