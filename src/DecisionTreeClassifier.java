@@ -17,34 +17,30 @@ public class DecisionTreeClassifier
 	public HashMap<String, Double> termIDF;
 	
 	private ArrayList<Document> documents;
+	private String testOut;
 	
 	private DTree tree;
 	
 	private int lowFreqCutOff;
 	private int highFreqCutOff;
 	
-	public DecisionTreeClassifier(String filename)
+	private long startTime;
+	private long treeTime;
+	private long endTime;
+	
+	private double trainAccu;
+	private double testAccu;
+	
+	public DecisionTreeClassifier()
 	{
-		InputStream in = null;
-		if (!filename.equals(""))
-		{
-			try
-			{
-				in = new FileInputStream(filename);
-			} catch (FileNotFoundException e)
-			{
-				e.printStackTrace();
-			}
-		}
-		else
-		{
-			in = System.in;
-		}
+		InputStream in = System.in;
 
 		INIT_STOP_WORDS();
 
 		Scanner reader = new Scanner(in);
 		String line = null;
+		
+		startTime = System.currentTimeMillis();
 
 		termFreq = new HashMap<String, Integer>(300);
 		termIDF = new HashMap<String, Double>(300);
@@ -60,7 +56,7 @@ public class DecisionTreeClassifier
 			Document doc = new Document(this, line, true);
 			documents.add(doc);
 		}
-		lowFreqCutOff = (int)Math.round(documents.size() * 0.01);
+		lowFreqCutOff = (int)Math.round(documents.size() * 0.004);
 		highFreqCutOff = (int)Math.round(documents.size() * 0.3);
 		calcIDF();
 		
@@ -71,6 +67,9 @@ public class DecisionTreeClassifier
 		
 		tree.makeTree(documents);
 		
+		treeTime = System.currentTimeMillis() - startTime;
+		
+		trainAccu = tree.sortData(documents);
 		/*BufferedReader fileReader = null;
 		try
 		{
@@ -88,8 +87,9 @@ public class DecisionTreeClassifier
 		}*/
 	}
 	
-	public void sortData(ArrayList<String> docStrings)
+	public double sortData(ArrayList<String> docStrings, boolean test)
 	{
+		long startTime = System.currentTimeMillis();
 		ArrayList<Document> sortDocs = new ArrayList<Document>(100);
 		for (String ss:docStrings)
 		{
@@ -102,24 +102,40 @@ public class DecisionTreeClassifier
 			dd.calcWeight();
 		}
 		
-		tree.sortData(sortDocs);
-		
+		double aa = tree.sortData(sortDocs);
+		if (test)
+		{
+			
+			endTime = System.currentTimeMillis() - startTime;
+			testOut = "";
+			for (Document doc:sortDocs)
+			{
+				if (doc.isLabel())
+					testOut += "1\n";
+				else
+					testOut += "0\n";
+			}
+		}
+		return aa;
+	}
+	
+	public void printStuff()
+	{
+		System.out.print(testOut);
+		System.out.println(Math.round(treeTime * .001) + "seconds");
+		System.out.println(Math.round(endTime * .001) + "seconds");
+		System.out.println(trainAccu + " training accuracy");
+		System.out.println(testAccu + " test accuracy");
 	}
 	
 
 	public static void main(String[] args)
 	{
 		String fn = "";
-		if (args.length >= 1)
-		{
-			fn = args[0];
-		}
-		DecisionTreeClassifier dt = new DecisionTreeClassifier(fn);
-		
-		if (args.length >= 2)
+		DecisionTreeClassifier dt = new DecisionTreeClassifier();
 		{
 			ArrayList<String> docStrings = new ArrayList<String>(100);
-			fn = args[1];
+			fn = args[0];
 			BufferedReader fileReader = null;
 			try
 			{
@@ -130,7 +146,10 @@ public class DecisionTreeClassifier
 					docStrings.add(line);
 					// parse line to get label and data
 				}
-				dt.sortData(docStrings);
+				
+				dt.testAccu = dt.sortData(docStrings, true);
+				
+				dt.printStuff();
 			} catch (FileNotFoundException e)
 			{
 				e.printStackTrace();
@@ -162,19 +181,10 @@ public class DecisionTreeClassifier
 		for (String kk:termFreq.keySet())
 		{
 			int dtf = termFreq.get(kk);
-			if (dtf >= highFreqCutOff)
-			{
-				System.out.println("too much " + kk + ":" + dtf);
-			}
-			if (dtf <= lowFreqCutOff)
-			{
-				System.out.println("too little " + kk + ":" + dtf);
-			}
-			if (dtf > 5 && dtf < 500)
+			if (dtf > lowFreqCutOff && dtf < highFreqCutOff)
 				termIDF.put(kk, 1 + Math.log(documents.size() / dtf));
 			//System.out.println(kk + ":" + termFreq.get(kk) + "," + termIDF.get(kk));
 		}
-		System.out.println("total terms" + termIDF.size());
 	}
 	
 	public double getIDF(String term)
